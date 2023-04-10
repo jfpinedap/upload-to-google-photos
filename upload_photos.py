@@ -94,14 +94,14 @@ def send_image(file_path: str):
 
 
 if __name__ == "__main__":
-    try:
-        with open("total_register.json", "r") as f:
-            total_register = json.load(f)
+    with open("total_register.json", "r") as f:
+        total_register = json.load(f)
 
-        uploaded_images = total_register.get("uploaded", [])
+    uploaded_images = total_register.get("uploaded", [])
 
-        for num, file_path in enumerate(file_paths, start=1):
-            logger.info(f"File num: {num}")
+    for num, file_path in enumerate(file_paths, start=1):
+        try:
+            logger.info(f"File num: {num} - {file_path}")
             if file_path in uploaded_images:
                 logger.info(f"This image has already updated: {file_path}")
                 continue
@@ -111,11 +111,14 @@ if __name__ == "__main__":
                 key = "error"
             register[key].append(file_path)
             time.sleep(time_sleep)
-    except Exception as e:
-        logger.info(e)
-    finally:
-        with open(f"registers/register_{idx_from}-{idx_to}.json", "w") as f:
-            # Use the json module to dump the list to the file
-            json.dump(register, f)
+        except Exception as e:
+            logger.info(e)
+            logger.info(f"Upload failed for file: {file_path}")
+            register["error"].append(file_path)
+            continue
+        finally:
+            with open(f"registers/register_{idx_from}-{idx_to}.json", "w") as f:
+                # Use the json module to dump the list to the file
+                json.dump(register, f)
 
     create_uploaded_images_report()
